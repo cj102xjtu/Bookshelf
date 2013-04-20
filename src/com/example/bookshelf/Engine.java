@@ -6,11 +6,14 @@ import java.util.ArrayList;
 import android.R.string;
 import android.app.IntentService;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.util.Log;
 
 interface Msg2Ui{
     public void excute(MainActivity activity);
@@ -18,8 +21,9 @@ interface Msg2Ui{
 
 public class Engine extends IntentService {
 
-    /** Keeps track of the registered client. */
-    Messenger mClient = null;
+    static final String LOG_TAG = "Engine";
+
+    HttpHandler mHttpHandler = null;
     /** Holds last value set by a client. */
     int mValue = 0;
 
@@ -28,7 +32,7 @@ public class Engine extends IntentService {
      * service. The Message's replyTo field must be a Messenger of the client
      * where callbacks should be sent.
      */
-    static final int MSG_REGISTER_CLIENT = 1;
+    static final int MSG_REGISTER_CLIENT = 4;
 
     /**
      * Command to the service to unregister a client, ot stop receiving
@@ -43,41 +47,17 @@ public class Engine extends IntentService {
      * clients with the new value.
      */
     static final int MSG_SET_VALUE = 3;
+    static final int MSG_HTTP_OPERATION = 1;
 
-    /**
-     * Handler of incoming messages from clients.
-     */
-    static class IncomingHandler extends Handler {
-        private final WeakReference<Engine> mEngine;
-
-        IncomingHandler(Engine engine) {
-            mEngine = new WeakReference<Engine>(engine);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            Engine engine = mEngine.get();
-            if (engine != null) {
-                engine.handleMsg(msg);
-            } else {
-                super.handleMessage(msg);
-            }
-        }
-    }
-
-    /**
-     * Target we publish for clients to send messages to IncomingHandler.
-     */
-    final Messenger mMessenger = new Messenger(new IncomingHandler(this));
 
     @Override
     public void onCreate() {
-
+        super.onCreate();
     }
 
     @Override
     public void onDestroy() {
-
+        super.onDestroy();
     }
 
     /**
@@ -86,31 +66,7 @@ public class Engine extends IntentService {
      */
     @Override
     public IBinder onBind(Intent intent) {
-        return mMessenger.getBinder();
-    }
-
-    private void handleMsg(Message msg) {
-        switch (msg.what) {
-        case MSG_REGISTER_CLIENT:
-            mClient = msg.replyTo;
-            break;
-        case MSG_UNREGISTER_CLIENT:
-            mClient = null;
-            break;
-        case MSG_SET_VALUE:
-            mValue = msg.arg1;
-            testFunction(msg);
-//            try {
-//                mClient.send(Message.obtain(null, MSG_SET_VALUE, mValue, 0));
-//                
-//            } catch (RemoteException e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            }
-            break;
-        default:
-            break;
-        }
+        return null;
     }
 
     public Engine() {
@@ -120,28 +76,37 @@ public class Engine extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        // TODO Auto-generated method stub
-
-    }
-    
-    private void testFunction(Message msg)
-    {
-        final ArrayList<String> testList = new ArrayList<String>();
-        testList.add(String.valueOf(msg.arg1));
-        testList.add(String.valueOf(msg.arg2));
-        
-        try {
-            mClient.send(Message.obtain(null, MSG_SET_VALUE, new Msg2Ui() {
+        Log.d(LOG_TAG, "onHandleIntent");
+        int action = intent.getIntExtra("ACTION", MSG_HTTP_OPERATION);
+        if(action == MSG_REGISTER_CLIENT)
+        {
+            Log.d(LOG_TAG, "do get all books");
+//            HttpHandler.getAllBooks();
+            Bundle extras = intent.getExtras();
+            final ArrayList<String> testList = new ArrayList<String>();
+            testList.add("this is arg1");
+            testList.add("this is arg2");
+            if (extras != null) {
+              Messenger messenger = (Messenger) extras.get("MESSENGER");
+              Message msg = Message.obtain(null, MSG_SET_VALUE, new Msg2Ui() {
                 
                 @Override
                 public void excute(MainActivity activity) {
                     activity.updateBookList(testList);
                     
                 }
-            }));
-        } catch (RemoteException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+            });
+              try {
+                  messenger.send(msg);
+              } catch (android.os.RemoteException e1) {
+                Log.w(getClass().getName(), "Exception sending message", e1);
+              }
+        }}
+    }
+
+    
+    public void getbooks()
+    {
+        HttpHandler.getAllBooks();
     }
 }

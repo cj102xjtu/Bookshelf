@@ -27,13 +27,11 @@ public class TestPageFragment extends Fragment {
     private Button LoanBookButton = null;
     private Button ReturnBookButton = null;
     private EditText TextFeild = null;
-    private Messenger mService = null;
 
     public static final String ARG_SECTION_NUMBER = "section_number";
 
-    public TestPageFragment(Messenger service) {
+    public TestPageFragment() {
         Log.d(LOG_TAG, "Fragment constructor");
-        mService = service;
     }
 
     @Override
@@ -52,8 +50,14 @@ public class TestPageFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Give it some value as an example.
-                Message msg = Message.obtain(null, Engine.MSG_SET_VALUE,
-                        this.hashCode(), 3);
+                Message msg = Message.obtain(null, Engine.MSG_HTTP_OPERATION, new Msg2Engine() {
+                    
+                    @Override
+                    public void excute(Engine engine) {
+                        engine.getbooks();                        
+                    }
+                });
+                
                 ((MainActivity) getActivity()).sendMsg2Engine(msg);
 
             }
