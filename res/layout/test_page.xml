@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/AllBookButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AllBook" />
+
+        <Button
+            android:id="@+id/LentBookButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LentBook" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/LoanBookButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LoanBook" />
+
+        <Button
+            android:id="@+id/ReturnBookButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ReturnBook" />
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:focusable="false"
+        android:enabled="false" >
+
+        <requestFocus />
+    </EditText>
+
+</LinearLayout>
