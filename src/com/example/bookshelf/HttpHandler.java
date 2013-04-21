@@ -171,10 +171,7 @@ public class HttpHandler {
 
             // Send POST output.
             ObjectOutputStream printout = new ObjectOutputStream(out);
-//            DataOutputStream printout = new DataOutputStream(out);
-//            printout.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
             printout.writeObject(jsonParam.toString());
-//            printout.writeObject("{\"id\": \"2\", \"lent\": \"samme\"}");
             printout.flush();
             printout.close();
             result = true;

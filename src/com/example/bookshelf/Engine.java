@@ -4,7 +4,9 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 
 interface Msg2Ui {
@@ -82,7 +84,20 @@ public class Engine extends IntentService {
                 engineAction.excute(this);
             }
             
-            
+            // send message back to UI
+            try {
+                messenger.send(Message.obtain(null, 0, new Msg2Ui() {
+                    
+                    @Override
+                    public void excute(MainActivity activity) {
+                        // TODO Auto-generated method stub
+                        
+                    }
+                }));
+            } catch (RemoteException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 

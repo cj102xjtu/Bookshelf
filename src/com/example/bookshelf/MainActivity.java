@@ -136,7 +136,7 @@ public class MainActivity extends FragmentActivity  {
             // Return a DummySectionFragment (defined as a static inner class
             // below) with the page number as its lone argument.
             Fragment fragment = null;
-            if (position == 0) {
+            if (position == 2) {
                 fragment = new TestPageFragment();
                 Bundle args = new Bundle();
                 args.putInt(TestPageFragment.ARG_SECTION_NUMBER, position + 1);
@@ -158,11 +158,11 @@ public class MainActivity extends FragmentActivity  {
         public CharSequence getPageTitle(int position) {
             switch (position) {
             case 0:
-                return getString(R.string.title_section1).toUpperCase();
+                return getString(R.string.title_section1);
             case 1:
-                return getString(R.string.title_section2).toUpperCase();
+                return getString(R.string.title_section2);
             case 2:
-                return getString(R.string.title_section3).toUpperCase();
+                return getString(R.string.title_section3);
             }
             return null;
         }

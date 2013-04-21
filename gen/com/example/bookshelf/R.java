@@ -15,9 +15,9 @@ public final class R {
     }
     public static final class id {
         public static final int AllBookButton=0x7f070002;
-        public static final int LentBookButton=0x7f070003;
-        public static final int LoanBookButton=0x7f070004;
-        public static final int ReturnBookButton=0x7f070005;
+        public static final int LoanBookButton=0x7f070003;
+        public static final int ReturnBookButton=0x7f070004;
+        public static final int WareUpTestButton=0x7f070005;
         public static final int editText1=0x7f070006;
         public static final int menu_settings=0x7f070007;
         public static final int pager=0x7f070000;
