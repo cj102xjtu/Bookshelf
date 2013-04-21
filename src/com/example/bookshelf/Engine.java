@@ -1,21 +1,13 @@
 package com.example.bookshelf;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-
-import android.R.string;
 import android.app.IntentService;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
 
-interface Msg2Ui{
+interface Msg2Ui {
     public void excute(MainActivity activity);
 }
 
@@ -47,8 +39,9 @@ public class Engine extends IntentService {
      * clients with the new value.
      */
     static final int MSG_SET_VALUE = 3;
-    static final int MSG_HTTP_OPERATION = 1;
-
+    static final int MSG_GET_BOOKS_INFO = 1;
+    static final int MSG_LOAN_A_BOOK = 2;
+    static final int MSG_RETURN_A_BOOK = 3;
 
     @Override
     public void onCreate() {
@@ -77,36 +70,47 @@ public class Engine extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d(LOG_TAG, "onHandleIntent");
-        int action = intent.getIntExtra("ACTION", MSG_HTTP_OPERATION);
-        if(action == MSG_REGISTER_CLIENT)
+        Bundle extras = intent.getExtras();
+        if(extras != null)
         {
-            Log.d(LOG_TAG, "do get all books");
-//            HttpHandler.getAllBooks();
-            Bundle extras = intent.getExtras();
-            final ArrayList<String> testList = new ArrayList<String>();
-            testList.add("this is arg1");
-            testList.add("this is arg2");
-            if (extras != null) {
-              Messenger messenger = (Messenger) extras.get("MESSENGER");
-              Message msg = Message.obtain(null, MSG_SET_VALUE, new Msg2Ui() {
-                
-                @Override
-                public void excute(MainActivity activity) {
-                    activity.updateBookList(testList);
-                    
-                }
-            });
-              try {
-                  messenger.send(msg);
-              } catch (android.os.RemoteException e1) {
-                Log.w(getClass().getName(), "Exception sending message", e1);
-              }
-        }}
+            EngineAction engineAction = (EngineAction)extras.get("ACTION");
+            Messenger messenger = (Messenger) extras.get("MESSENGER");
+            
+            // do the action
+            if(engineAction != null)
+            {
+                engineAction.excute(this);
+            }
+            
+            
+        }
     }
 
-    
-    public void getbooks()
-    {
+    public void getBooksInfo() {
+        // get info from server
         HttpHandler.getAllBooks();
+        HttpHandler.getUsersBook("samme");
+
+        // update UI
+    }
+
+    public void loanBook(String bookId, String userId) {
+        if (bookId.length() != 0 && userId.length() != 0) {
+            // post request to server
+            HttpHandler.loanOrReturnBook(bookId, userId, true);
+        } else {
+            Log.e(LOG_TAG, "bookId or userId is empty. bookId = " + bookId
+                    + ". userId = " + userId);
+        }
+    }
+
+    public void returnBook(String bookId, String userId) {
+        if (bookId.length() != 0 && userId.length() != 0) {
+            // post request to server
+            HttpHandler.loanOrReturnBook(bookId, userId, false);
+        } else {
+            Log.e(LOG_TAG, "bookId or userId is empty. bookId = " + bookId
+                    + ". userId = " + userId);
+        }
     }
 }

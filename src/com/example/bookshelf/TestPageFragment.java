@@ -50,16 +50,28 @@ public class TestPageFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Give it some value as an example.
-                Message msg = Message.obtain(null, Engine.MSG_HTTP_OPERATION, new Msg2Engine() {
-                    
-                    @Override
-                    public void excute(Engine engine) {
-                        engine.getbooks();                        
-                    }
-                });
+                EngineAction action = new EngineAction(EngineAction.GET_BOOKS_INFO);
                 
-                ((MainActivity) getActivity()).sendMsg2Engine(msg);
+                ((MainActivity) getActivity()).sendMsg2Engine(action);
 
+            }
+        });
+        
+        LoanBookButton.setOnClickListener(new OnClickListener() {
+            
+            @Override
+            public void onClick(View v) {
+                EngineAction action = new EngineAction(EngineAction.LOAN_A_BOOK, "2", "samme");
+                ((MainActivity) getActivity()).sendMsg2Engine(action);
+            }
+        });
+        
+        ReturnBookButton.setOnClickListener(new OnClickListener() {
+            
+            @Override
+            public void onClick(View v) {
+                EngineAction action = new EngineAction(EngineAction.RETURN_A_BOOK, "2", "samme");
+                ((MainActivity) getActivity()).sendMsg2Engine(action);
             }
         });
 

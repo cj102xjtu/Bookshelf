@@ -6,19 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -200,14 +192,14 @@ public class MainActivity extends FragmentActivity  {
 
     }
     
-    public void sendMsg2Engine(Message msg)
+    public void sendMsg2Engine(EngineAction engineAction)
     {   
         Intent intent = new Intent(getApplicationContext(), Engine.class);
         // Create a new Messenger for the communication back
 
         intent.putExtra("MESSENGER", mMessenger);
 
-        intent.putExtra("ACTION", Engine.MSG_REGISTER_CLIENT);
+        intent.putExtra("ACTION", engineAction);
         startService(intent);
         
         
