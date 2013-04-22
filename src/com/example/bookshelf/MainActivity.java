@@ -1,11 +1,10 @@
 package com.example.bookshelf;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
+import org.json.JSONArray;
+
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,17 +16,18 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-abstract class Msg2Engine 
-{
-    public abstract void excute(Engine engine);    
+import com.fedorvlasov.lazylist.ImageLoader;
+
+abstract class Msg2Engine {
+    public abstract void excute(Engine engine);
 }
 
-public class MainActivity extends FragmentActivity  {
+public class MainActivity extends FragmentActivity {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -38,6 +38,7 @@ public class MainActivity extends FragmentActivity  {
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     static private String LOG_TAG = "MainActivity";
+
     /*************************************************************************
      * code to handle communication with engine
      *************************************************************************/
@@ -60,14 +61,13 @@ public class MainActivity extends FragmentActivity  {
             } else {
                 super.handleMessage(msg);
             }
-        } 
+        }
     }
 
     /**
      * Target we publish for clients to send messages to IncomingHandler.
      */
     final Messenger mMessenger = new Messenger(new IncomingHandler(this));
-
 
     /*************************************************************************
      * code to handle UI
@@ -79,12 +79,17 @@ public class MainActivity extends FragmentActivity  {
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
+    LayoutInflater mInflater;
+    ImageLoader mImageLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(LOG_TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mImageLoader = new ImageLoader(getApplicationContext());
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the app.
@@ -94,7 +99,10 @@ public class MainActivity extends FragmentActivity  {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-        Log.d(LOG_TAG, "onCreate exit");
+
+        // get books information
+        EngineAction action = new EngineAction(EngineAction.GET_BOOKS_INFO);
+        sendMsg2Engine(action);
     }
 
     @Override
@@ -106,10 +114,10 @@ public class MainActivity extends FragmentActivity  {
 
     private void handleMessage(Message msg) {
         switch (msg.what) {
-        case Engine.MSG_SET_VALUE:
+        case Engine.MSG_GET_BOOKS_INFO:
             // As part of the sample, tell the user what happened.
-            Toast.makeText(getApplicationContext(), "message send from service",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),
+                    "message send from service", Toast.LENGTH_SHORT).show();
             Msg2Ui action = (Msg2Ui) msg.obj;
             action.excute(this);
             break;
@@ -117,7 +125,6 @@ public class MainActivity extends FragmentActivity  {
             break;
         }
     }
-    
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -125,6 +132,8 @@ public class MainActivity extends FragmentActivity  {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+        ListSectionFragment mListSection1 = null;
+        ListSectionFragment mListSection2 = null;
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -141,8 +150,14 @@ public class MainActivity extends FragmentActivity  {
                 Bundle args = new Bundle();
                 args.putInt(TestPageFragment.ARG_SECTION_NUMBER, position + 1);
                 fragment.setArguments(args);
-            } else {
-                fragment = new ListSectionFragment();
+            }else if(position == 0)
+            {
+                mListSection1 = new ListSectionFragment();
+                fragment = mListSection1;
+            }
+            else {
+                mListSection2 = new ListSectionFragment();
+                fragment = mListSection2;
             }
 
             return fragment;
@@ -173,27 +188,18 @@ public class MainActivity extends FragmentActivity  {
         @Override
         public void onViewCreated(View view, Bundle savedInstanceState) {
 
-            // test code
-            List<Map<String, Object>> myData = new ArrayList<Map<String, Object>>();
-            for (int i = 0; i < 10; i++) {
-                Map<String, Object> data = new HashMap<String, Object>();
-                data.put("firstKey", "FirstKey" + i);
-                data.put("secondKey", "SecondKey" + i);
-                myData.add(data);
-            }
+            BookListAdapter allBooksListAdapter = new BookListAdapter(null,
+                    ((MainActivity) getActivity()).mInflater,
+                    ((MainActivity) getActivity()).mImageLoader);
 
-            setListAdapter(new SimpleAdapter(getActivity(), myData,
-                    android.R.layout.simple_list_item_2, new String[] {
-                            "firstKey", "secondKey" }, new int[] {
-                            android.R.id.text1, android.R.id.text2 }));
+            setListAdapter(allBooksListAdapter);
 
             super.onViewCreated(view, savedInstanceState);
         }
 
     }
-    
-    public void sendMsg2Engine(EngineAction engineAction)
-    {   
+
+    public void sendMsg2Engine(EngineAction engineAction) {
         Intent intent = new Intent(getApplicationContext(), Engine.class);
         // Create a new Messenger for the communication back
 
@@ -201,14 +207,15 @@ public class MainActivity extends FragmentActivity  {
 
         intent.putExtra("ACTION", engineAction);
         startService(intent);
-        
-        
+
     }
 
-    public void updateBookList(ArrayList<String> avialibeBookList) {
-        
-        Toast.makeText(getApplicationContext(), "1: " + avialibeBookList.get(0) + " 2: " + avialibeBookList.get(1), Toast.LENGTH_LONG).show();
-        
+    public void updateBookList(JSONArray allBooksInfo, JSONArray userBook) {
+        BookListAdapter bookListAdapter = (BookListAdapter)mSectionsPagerAdapter.mListSection1.getListAdapter();
+        bookListAdapter.setData(allBooksInfo);
+        bookListAdapter.notifyDataSetChanged();
+        Toast.makeText(getApplicationContext(), "info send back from engine",
+                Toast.LENGTH_SHORT).show();
     }
 
 }

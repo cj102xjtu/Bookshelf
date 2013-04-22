@@ -2,6 +2,8 @@ package com.example.bookshelf;
 
 import java.io.Serializable;
 
+import android.os.Messenger;
+
 public class EngineAction implements Serializable{
     private static final long serialVersionUID = -7060210535500464481L;
     public static final int GET_BOOKS_INFO = 0;
@@ -24,17 +26,17 @@ public class EngineAction implements Serializable{
         mUserId = userId;
     }
     
-    public void excute(Engine engine)
+    public void excute(Engine engine, Messenger messager)
     {
         switch (mActionType) {
         case GET_BOOKS_INFO:
-            engine.getBooksInfo();
+            engine.getBooksInfo(messager);
             break;
         case LOAN_A_BOOK:
-            engine.loanBook(mBookId, mUserId);
+            engine.loanOrReturnBook(mBookId, mUserId, true, messager);
             break;
         case RETURN_A_BOOK:
-            engine.returnBook(mBookId, mUserId);
+            engine.loanOrReturnBook(mBookId, mUserId, false, messager);
             break;
 
         default:

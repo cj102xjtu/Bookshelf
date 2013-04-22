@@ -1,20 +1,24 @@
 package com.example.bookshelf;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.protocol.HTTP;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
@@ -23,7 +27,6 @@ public class HttpHandler {
 
     private static String ACCEPT_HEADER = "Accept";
     private static String ACCEPT_HEADER_VALUE = "application/json";
-    private static String CONTENT_TYPE_HEADER = "Content-Type";
     private static String CONTENT_TYPE_HEADER_VALUE = "application/json";
     private static String BOOK_ID = "id";
     private static String USER_ID = "lent";
@@ -85,40 +88,38 @@ public class HttpHandler {
     static public boolean loanOrReturnBook(String bookId, String userId,
             boolean loanBook) {
         boolean result = false;
-        HttpURLConnection urlConnection = null;
-        String action = null;
+
+        HttpClient client = new DefaultHttpClient();
+        HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); // Timeout
+                                                                              // Limit
+        HttpResponse response;
+        JSONObject json = new JSONObject();
+        
+        // set http action
+        String action = "";
         if (loanBook) {
             action = URL_LOAN_BOOK;
         } else {
             action = URL_RETURN_BOOK;
         }
+
         try {
-            // send post request
-            URL url = new URL(action);
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setDoOutput(true);
-            urlConnection.setChunkedStreamingMode(0);
-            urlConnection
-                    .setRequestProperty(ACCEPT_HEADER, ACCEPT_HEADER_VALUE);
-            urlConnection.setRequestProperty(CONTENT_TYPE_HEADER,
-                    CONTENT_TYPE_HEADER_VALUE);
+            HttpPost post = new HttpPost(action);
+            post.setHeader(ACCEPT_HEADER, ACCEPT_HEADER_VALUE);
+            json.put(USER_ID, userId);
+            json.put(BOOK_ID, bookId);
+            StringEntity se = new StringEntity(json.toString());
+            se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+                    CONTENT_TYPE_HEADER_VALUE));
+            post.setEntity(se);
+            response = client.execute(post);
 
-            OutputStream out = new BufferedOutputStream(
-                    urlConnection.getOutputStream());
+            /* Checking response */
+            result = readPostResult(response);
 
-            writeStream(out, bookId, userId);
-
-            // read result
-            result = readPostResult(urlConnection);
-
-        } catch (MalformedURLException e) {
-            // TODO Auto-generated catch block
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } finally {
-            urlConnection.disconnect();
+            Log.d("Error", "Cannot Estabilish Connection");
         }
 
         return result;
@@ -130,10 +131,8 @@ public class HttpHandler {
         try {
             reader = new BufferedReader(new InputStreamReader(in));
             String line = "";
-            int j = 0;
             while ((line = reader.readLine()) != null) {
                 Log.d(LOG_TAG, line);
-                Log.d(LOG_TAG, String.valueOf(j++));
                 try {
                     jsonArray = new JSONArray(line);
                     Log.i(LOG_TAG, "Number of entries " + jsonArray.length());
@@ -160,54 +159,21 @@ public class HttpHandler {
         return jsonArray;
     }
 
-    static private boolean writeStream(OutputStream out, String bookId,
-            String userId) {
-        boolean result = false;
-        JSONObject jsonParam = new JSONObject();
-        try {
-            // Create JSONObject here
-            jsonParam.put(USER_ID, userId);
-            jsonParam.put(BOOK_ID, bookId);
-
-            // Send POST output.
-            ObjectOutputStream printout = new ObjectOutputStream(out);
-            printout.writeObject(jsonParam.toString());
-            printout.flush();
-            printout.close();
-            result = true;
-        } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return result;
-    }
-
-    static private boolean readPostResult(HttpURLConnection urlConnection) {
+    static private boolean readPostResult(HttpResponse response) {
         Log.d(LOG_TAG, "readPostResult");
         boolean result = false;
         try {
-            int httpResult = urlConnection.getResponseCode();
-            StringBuilder sb = new StringBuilder();
-            if (httpResult == HttpURLConnection.HTTP_OK) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        urlConnection.getInputStream(), "utf-8"));
-                String line = null;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
+            if (response != null) {
+                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                    InputStream in = response.getEntity().getContent();
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(in));
+                    String line = "";
+                    while ((line = reader.readLine()) != null) {
+                        Log.d(LOG_TAG, line);
+                    }
+                    result = true;
                 }
-                br.close();
-                Log.d(LOG_TAG,"http_OK" + sb.toString());
-                result = true;
-
-            } else {
-                Log.d(LOG_TAG, urlConnection.getResponseMessage());
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block

@@ -1,19 +1,13 @@
 package com.example.bookshelf;
 
 import android.os.Bundle;
-import android.os.Message;
-import android.os.MessageQueue;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.webkit.WebView.FindListener;
 import android.widget.Button;
-import com.example.bookshelf.Msg2Engine;
 import android.widget.EditText;
 
 public class TestPageFragment extends Fragment {

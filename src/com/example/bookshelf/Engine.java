@@ -1,5 +1,7 @@
 package com.example.bookshelf;
 
+import org.json.JSONArray;
+
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
@@ -73,59 +75,56 @@ public class Engine extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.d(LOG_TAG, "onHandleIntent");
         Bundle extras = intent.getExtras();
-        if(extras != null)
-        {
-            EngineAction engineAction = (EngineAction)extras.get("ACTION");
+        if (extras != null) {
+            EngineAction engineAction = (EngineAction) extras.get("ACTION");
             Messenger messenger = (Messenger) extras.get("MESSENGER");
-            
+
             // do the action
-            if(engineAction != null)
-            {
-                engineAction.excute(this);
+            if (engineAction != null) {
+                engineAction.excute(this, messenger);
             }
-            
-            // send message back to UI
-            try {
-                messenger.send(Message.obtain(null, 0, new Msg2Ui() {
-                    
-                    @Override
-                    public void excute(MainActivity activity) {
-                        // TODO Auto-generated method stub
-                        
-                    }
-                }));
-            } catch (RemoteException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+
+
         }
     }
 
-    public void getBooksInfo() {
+    public void getBooksInfo(Messenger messager) {
         // get info from server
-        HttpHandler.getAllBooks();
-        HttpHandler.getUsersBook("samme");
+        final JSONArray allBooks = HttpHandler.getAllBooks();
+        final JSONArray usersBooks = HttpHandler.getUsersBook("samme");
 
         // update UI
+        // send message back to UI
+        try {
+            messager.send(Message.obtain(null, MSG_GET_BOOKS_INFO, new Msg2Ui() {
+
+                @Override
+                public void excute(MainActivity activity) {
+                    activity.updateBookList(allBooks, usersBooks);
+                }
+            }));
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public void loanBook(String bookId, String userId) {
+    public void loanOrReturnBook(String bookId, String userId, boolean loanBook, Messenger messager) {
+        boolean result = false;
         if (bookId.length() != 0 && userId.length() != 0) {
             // post request to server
-            HttpHandler.loanOrReturnBook(bookId, userId, true);
+            result = HttpHandler.loanOrReturnBook(bookId, userId, loanBook);
         } else {
             Log.e(LOG_TAG, "bookId or userId is empty. bookId = " + bookId
                     + ". userId = " + userId);
         }
-    }
 
-    public void returnBook(String bookId, String userId) {
-        if (bookId.length() != 0 && userId.length() != 0) {
-            // post request to server
-            HttpHandler.loanOrReturnBook(bookId, userId, false);
+        // update UI
+        if (result == true) {
+            getBooksInfo(messager);
         } else {
-            Log.e(LOG_TAG, "bookId or userId is empty. bookId = " + bookId
-                    + ". userId = " + userId);
+            // pop up error message in UI
         }
+
     }
 }
