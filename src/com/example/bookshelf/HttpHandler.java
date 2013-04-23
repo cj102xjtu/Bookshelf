@@ -132,7 +132,7 @@ public class HttpHandler {
             reader = new BufferedReader(new InputStreamReader(in));
             String line = "";
             while ((line = reader.readLine()) != null) {
-                Log.d(LOG_TAG, line);
+                Log.v(LOG_TAG, line);
                 try {
                     jsonArray = new JSONArray(line);
                     Log.i(LOG_TAG, "Number of entries " + jsonArray.length());
@@ -170,7 +170,7 @@ public class HttpHandler {
                             new InputStreamReader(in));
                     String line = "";
                     while ((line = reader.readLine()) != null) {
-                        Log.d(LOG_TAG, line);
+                        Log.v(LOG_TAG, line);
                     }
                     result = true;
                 }

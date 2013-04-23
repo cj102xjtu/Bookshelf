@@ -4,7 +4,9 @@ import java.lang.ref.WeakReference;
 
 import org.json.JSONArray;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +21,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import com.fedorvlasov.lazylist.ImageLoader;
@@ -132,8 +137,11 @@ public class MainActivity extends FragmentActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        ListSectionFragment mListSection1 = null;
-        ListSectionFragment mListSection2 = null;
+        static final String LIST_TYPE = "ListType";
+
+        ListSectionFragment mAllBooksListSection = null;
+        ListSectionFragment mLoanBooksListSection = null;
+
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -150,14 +158,18 @@ public class MainActivity extends FragmentActivity {
                 Bundle args = new Bundle();
                 args.putInt(TestPageFragment.ARG_SECTION_NUMBER, position + 1);
                 fragment.setArguments(args);
-            }else if(position == 0)
-            {
-                mListSection1 = new ListSectionFragment();
-                fragment = mListSection1;
-            }
-            else {
-                mListSection2 = new ListSectionFragment();
-                fragment = mListSection2;
+            } else if (position == 0) {
+                mAllBooksListSection = new ListSectionFragment();
+                Bundle args = new Bundle();
+                args.putInt(LIST_TYPE, ListSectionFragment.ALL_BOOKS_LIST);
+                mAllBooksListSection.setArguments(args);
+                fragment = mAllBooksListSection;
+            } else {
+                mLoanBooksListSection = new ListSectionFragment();
+                Bundle args = new Bundle();
+                args.putInt(LIST_TYPE, ListSectionFragment.LOAN_BOOKS_LIST);
+                mAllBooksListSection.setArguments(args);
+                fragment = mLoanBooksListSection;
             }
 
             return fragment;
@@ -186,15 +198,102 @@ public class MainActivity extends FragmentActivity {
     public static class ListSectionFragment extends
             android.support.v4.app.ListFragment {
         @Override
+        public void onCreate(Bundle savedInstanceState) {
+            // TODO Auto-generated method stub
+            super.onCreate(savedInstanceState);
+            mListType = getArguments() != null ? getArguments().getInt(
+                    SectionsPagerAdapter.LIST_TYPE) : ALL_BOOKS_LIST;
+
+           
+        }
+
+        final static private int ALL_BOOKS_LIST = 0;
+        final static private int LOAN_BOOKS_LIST = 1;
+        private JSONArray mListContent = null;
+        private int mListType = ALL_BOOKS_LIST;
+
+        @Override
         public void onViewCreated(View view, Bundle savedInstanceState) {
+            Log.d(LOG_TAG, "ListSectionFragment onViewCreated");
+            BaseAdapter listAdapter = null;
 
-            BookListAdapter allBooksListAdapter = new BookListAdapter(null,
-                    ((MainActivity) getActivity()).mInflater,
-                    ((MainActivity) getActivity()).mImageLoader);
+            if (mListType == ALL_BOOKS_LIST) {
+                listAdapter = new AllBooksListAdapter(mListContent,
+                        ((MainActivity) getActivity()).mInflater,
+                        ((MainActivity) getActivity()).mImageLoader);
+            } else {
+                listAdapter = new LoanBooksListAdapter(mListContent,
+                        ((MainActivity) getActivity()).mInflater,
+                        ((MainActivity) getActivity()).mImageLoader);
+            }
 
-            setListAdapter(allBooksListAdapter);
+            setListAdapter(listAdapter);
+            
+            // handle item click event
+            getListView().setOnItemClickListener(new OnItemClickListener() {
+
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view,
+                        int position, final long id) {
+                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                
+                                // Yes button clicked loan or return a book
+                                EngineAction action = null;
+                                if (mListType == ALL_BOOKS_LIST) {
+                                    action = new EngineAction(
+                                            EngineAction.LOAN_A_BOOK, Long
+                                                    .toString(id), "samme");
+                                } else {
+                                    action = new EngineAction(
+                                            EngineAction.RETURN_A_BOOK, Long
+                                                    .toString(id), "samme");
+
+                                }
+                                
+                                
+                                ((MainActivity) getActivity())
+                                        .sendMsg2Engine(action);
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                // No button clicked
+                                break;
+                            }
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(view
+                            .getContext());
+                    String dailogString = null;
+                    if(mListType == ALL_BOOKS_LIST)
+                    {
+                        dailogString = "Do you want to borrow this book?";
+                    }
+                    else
+                    {
+                        dailogString = "Do you want to return this book?";
+                    }
+                    builder.setMessage(dailogString)
+                            .setPositiveButton("Yes", dialogClickListener)
+                            .setNegativeButton("No", dialogClickListener)
+                            .show();
+
+                }
+            });
+
 
             super.onViewCreated(view, savedInstanceState);
+        }
+
+        public void updateList(JSONArray listConent) {
+            mListContent = listConent;
+            LoanBooksListAdapter bookListAdapter = (LoanBooksListAdapter) getListAdapter();
+            bookListAdapter.setData(mListContent);
+            bookListAdapter.notifyDataSetChanged();
         }
 
     }
@@ -211,11 +310,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     public void updateBookList(JSONArray allBooksInfo, JSONArray userBook) {
-        BookListAdapter bookListAdapter = (BookListAdapter)mSectionsPagerAdapter.mListSection1.getListAdapter();
-        bookListAdapter.setData(allBooksInfo);
-        bookListAdapter.notifyDataSetChanged();
-        Toast.makeText(getApplicationContext(), "info send back from engine",
-                Toast.LENGTH_SHORT).show();
+        Log.d(LOG_TAG, "book list send back from engine");
+        mSectionsPagerAdapter.mAllBooksListSection.updateList(allBooksInfo);
+        mSectionsPagerAdapter.mLoanBooksListSection.updateList(userBook);
     }
 
 }

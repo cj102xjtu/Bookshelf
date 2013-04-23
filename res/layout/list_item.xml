@@ -8,7 +8,8 @@
         android:layout_width="50dip"
         android:layout_height="50dip"
         android:scaleType="centerCrop"
-        android:src="@drawable/stub" />
+        android:src="@drawable/stub"
+        android:contentDescription="@string/book_image" />
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -22,7 +23,7 @@
             android:layout_gravity="left|center_vertical"
             android:layout_marginLeft="10dip"
             android:layout_weight="1"
-            android:textSize="20dip" />
+            android:textSize="10sp" />
 
         <TextView
             android:id="@+id/text2"
@@ -31,7 +32,7 @@
             android:layout_gravity="left|center_vertical"
             android:layout_marginLeft="10dip"
             android:layout_weight="1"
-            android:textSize="20dip" />
+            android:textSize="10sp" />
     </LinearLayout>
 
 </LinearLayout>
