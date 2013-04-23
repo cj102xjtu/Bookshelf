@@ -168,7 +168,7 @@ public class MainActivity extends FragmentActivity {
                 mLoanBooksListSection = new ListSectionFragment();
                 Bundle args = new Bundle();
                 args.putInt(LIST_TYPE, ListSectionFragment.LOAN_BOOKS_LIST);
-                mAllBooksListSection.setArguments(args);
+                mLoanBooksListSection.setArguments(args);
                 fragment = mLoanBooksListSection;
             }
 
@@ -202,9 +202,7 @@ public class MainActivity extends FragmentActivity {
             // TODO Auto-generated method stub
             super.onCreate(savedInstanceState);
             mListType = getArguments() != null ? getArguments().getInt(
-                    SectionsPagerAdapter.LIST_TYPE) : ALL_BOOKS_LIST;
-
-           
+                    SectionsPagerAdapter.LIST_TYPE) : ALL_BOOKS_LIST;           
         }
 
         final static private int ALL_BOOKS_LIST = 0;
