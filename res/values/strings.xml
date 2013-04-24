@@ -10,7 +10,7 @@
     <string name="book_image">Book Image</string>
     <string name="setting_dialog_title">Please type your user name</string>
     <string name="setting_key">SettingKey</string>
-    <string name="setting_summary">Please type your user name</string>
+    <string name="default_user_name">JunC</string>
     <string name="setting_title">User name</string>
 
 </resources>
