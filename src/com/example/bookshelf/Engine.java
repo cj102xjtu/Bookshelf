@@ -92,7 +92,7 @@ public class Engine extends IntentService {
 
     public void getBooksInfo(Messenger messager) {
         // get user name from setting
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences preferences = Preferences.getPrefs(this);
         String userName = preferences.getString("SettingKey", "");
         Log.d(LOG_TAG, "user name is: " + userName);
         // get info from server

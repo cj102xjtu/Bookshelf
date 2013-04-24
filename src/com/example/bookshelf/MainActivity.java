@@ -113,7 +113,7 @@ public class MainActivity extends FragmentActivity {
         EngineAction action = new EngineAction(EngineAction.GET_BOOKS_INFO);
         sendMsg2Engine(action);
         
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = Preferences.getPrefs(this);
     }
 
     @Override
