@@ -27,6 +27,7 @@
             </intent-filter>
         </activity>
         <service android:name="com.example.bookshelf.Engine"></service>
+        <activity android:name="Preferences"></activity>
     </application>
 
 </manifest>

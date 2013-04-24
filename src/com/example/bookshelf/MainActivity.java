@@ -8,10 +8,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -20,6 +22,7 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -43,6 +46,7 @@ public class MainActivity extends FragmentActivity {
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     static private String LOG_TAG = "MainActivity";
+    SharedPreferences preferences = null;
 
     /*************************************************************************
      * code to handle communication with engine
@@ -108,6 +112,8 @@ public class MainActivity extends FragmentActivity {
         // get books information
         EngineAction action = new EngineAction(EngineAction.GET_BOOKS_INFO);
         sendMsg2Engine(action);
+        
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     @Override
@@ -115,6 +121,38 @@ public class MainActivity extends FragmentActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+ 
+        case R.id.menu_settings:
+            Intent i = new Intent(this, Preferences.class);
+            startActivity(i);
+            break;
+ 
+        }
+ 
+        return true;
+    }
+    
+
+    public void sendMsg2Engine(EngineAction engineAction) {
+        Intent intent = new Intent(getApplicationContext(), Engine.class);
+        // Create a new Messenger for the communication back
+
+        intent.putExtra("MESSENGER", mMessenger);
+
+        intent.putExtra("ACTION", engineAction);
+        startService(intent);
+
+    }
+
+    public void updateBookList(JSONArray allBooksInfo, JSONArray userBook) {
+        Log.d(LOG_TAG, "book list send back from engine");
+        mSectionsPagerAdapter.mAllBooksListSection.updateList(allBooksInfo);
+        mSectionsPagerAdapter.mLoanBooksListSection.updateList(userBook);
     }
 
     private void handleMessage(Message msg) {
@@ -252,16 +290,19 @@ public class MainActivity extends FragmentActivity {
                     switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         
+                        String userName = ((MainActivity)getActivity()).preferences.getString(getString(R.string.setting_key), "");
+                        Log.d(LOG_TAG, "user name is: " + userName);
+                        
                         // Yes button clicked loan or return a book
                         EngineAction action = null;
                         if (mListType == ALL_BOOKS_LIST) {
                             action = new EngineAction(
                                     EngineAction.LOAN_A_BOOK, Long
-                                            .toString(id), "samme");
+                                            .toString(id), userName);
                         } else {
                             action = new EngineAction(
                                     EngineAction.RETURN_A_BOOK, Long
-                                            .toString(id), "samme");
+                                            .toString(id), userName);
 
                         }
                         
@@ -298,21 +339,5 @@ public class MainActivity extends FragmentActivity {
 
     }
 
-    public void sendMsg2Engine(EngineAction engineAction) {
-        Intent intent = new Intent(getApplicationContext(), Engine.class);
-        // Create a new Messenger for the communication back
-
-        intent.putExtra("MESSENGER", mMessenger);
-
-        intent.putExtra("ACTION", engineAction);
-        startService(intent);
-
-    }
-
-    public void updateBookList(JSONArray allBooksInfo, JSONArray userBook) {
-        Log.d(LOG_TAG, "book list send back from engine");
-        mSectionsPagerAdapter.mAllBooksListSection.updateList(allBooksInfo);
-        mSectionsPagerAdapter.mLoanBooksListSection.updateList(userBook);
-    }
 
 }

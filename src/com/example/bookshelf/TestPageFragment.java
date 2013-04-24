@@ -38,6 +38,8 @@ public class TestPageFragment extends Fragment {
         mLoanBookButton = (Button) view.findViewById(R.id.LoanBookButton);
         mReturnBookButton = (Button) view.findViewById(R.id.ReturnBookButton);
         mTextFeild = (EditText) view.findViewById(R.id.editText1);
+        final String userName = ((MainActivity)getActivity()).preferences.getString(getString(R.string.setting_key), "");
+        Log.d(LOG_TAG, "user name is: " + userName);
 
         mAllBookButton.setOnClickListener(new OnClickListener() {
 
@@ -55,7 +57,7 @@ public class TestPageFragment extends Fragment {
             
             @Override
             public void onClick(View v) {
-                EngineAction action = new EngineAction(EngineAction.LOAN_A_BOOK, "2", "samme");
+                EngineAction action = new EngineAction(EngineAction.LOAN_A_BOOK, "2", userName);
                 ((MainActivity) getActivity()).sendMsg2Engine(action);
             }
         });
@@ -64,7 +66,7 @@ public class TestPageFragment extends Fragment {
             
             @Override
             public void onClick(View v) {
-                EngineAction action = new EngineAction(EngineAction.RETURN_A_BOOK, "2", "samme");
+                EngineAction action = new EngineAction(EngineAction.RETURN_A_BOOK, "2", userName);
                 ((MainActivity) getActivity()).sendMsg2Engine(action);
             }
         });

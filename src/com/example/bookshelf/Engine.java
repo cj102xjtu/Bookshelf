@@ -4,11 +4,13 @@ import org.json.JSONArray;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 interface Msg2Ui {
@@ -89,9 +91,13 @@ public class Engine extends IntentService {
     }
 
     public void getBooksInfo(Messenger messager) {
+        // get user name from setting
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String userName = preferences.getString("SettingKey", "");
+        Log.d(LOG_TAG, "user name is: " + userName);
         // get info from server
         final JSONArray allBooks = HttpHandler.getAllBooks();
-        final JSONArray usersBooks = HttpHandler.getUsersBook("samme");
+        final JSONArray usersBooks = HttpHandler.getUsersBook(userName);
 
         // update UI
         // send message back to UI
