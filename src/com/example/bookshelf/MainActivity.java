@@ -196,7 +196,7 @@ public class MainActivity extends FragmentActivity {
     }
 
     public static class ListSectionFragment extends
-            android.support.v4.app.ListFragment {
+            android.support.v4.app.ListFragment implements OnItemClickListener{
         @Override
         public void onCreate(Bundle savedInstanceState) {
             // TODO Auto-generated method stub
@@ -228,60 +228,7 @@ public class MainActivity extends FragmentActivity {
             setListAdapter(listAdapter);
             
             // handle item click event
-            getListView().setOnItemClickListener(new OnItemClickListener() {
-
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view,
-                        int position, final long id) {
-                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                            case DialogInterface.BUTTON_POSITIVE:
-                                
-                                // Yes button clicked loan or return a book
-                                EngineAction action = null;
-                                if (mListType == ALL_BOOKS_LIST) {
-                                    action = new EngineAction(
-                                            EngineAction.LOAN_A_BOOK, Long
-                                                    .toString(id), "samme");
-                                } else {
-                                    action = new EngineAction(
-                                            EngineAction.RETURN_A_BOOK, Long
-                                                    .toString(id), "samme");
-
-                                }
-                                
-                                
-                                ((MainActivity) getActivity())
-                                        .sendMsg2Engine(action);
-                                break;
-
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                // No button clicked
-                                break;
-                            }
-                        }
-                    };
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(view
-                            .getContext());
-                    String dailogString = null;
-                    if(mListType == ALL_BOOKS_LIST)
-                    {
-                        dailogString = "Do you want to borrow this book?";
-                    }
-                    else
-                    {
-                        dailogString = "Do you want to return this book?";
-                    }
-                    builder.setMessage(dailogString)
-                            .setPositiveButton("Yes", dialogClickListener)
-                            .setNegativeButton("No", dialogClickListener)
-                            .show();
-
-                }
-            });
+            getListView().setOnItemClickListener(this);
 
 
             super.onViewCreated(view, savedInstanceState);
@@ -293,6 +240,61 @@ public class MainActivity extends FragmentActivity {
             bookListAdapter.setData(mListContent);
             bookListAdapter.notifyDataSetChanged();
         }
+
+
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view,
+                int position, final long id) {
+            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        
+                        // Yes button clicked loan or return a book
+                        EngineAction action = null;
+                        if (mListType == ALL_BOOKS_LIST) {
+                            action = new EngineAction(
+                                    EngineAction.LOAN_A_BOOK, Long
+                                            .toString(id), "samme");
+                        } else {
+                            action = new EngineAction(
+                                    EngineAction.RETURN_A_BOOK, Long
+                                            .toString(id), "samme");
+
+                        }
+                        
+                        
+                        ((MainActivity) getActivity())
+                                .sendMsg2Engine(action);
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        // No button clicked
+                        break;
+                    }
+                }
+            };
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(view
+                    .getContext());
+            String dailogString = null;
+            if(mListType == ALL_BOOKS_LIST)
+            {
+                dailogString = "Do you want to borrow this book?";
+            }
+            else
+            {
+                dailogString = "Do you want to return this book?";
+            }
+            builder.setMessage(dailogString)
+                    .setPositiveButton("Yes", dialogClickListener)
+                    .setNegativeButton("No", dialogClickListener)
+                    .show();
+
+        }
+    
 
     }
 

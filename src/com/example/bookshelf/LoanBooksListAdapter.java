@@ -81,7 +81,6 @@ public class LoanBooksListAdapter extends BaseAdapter {
 
         JSONObject jsonObject = (JSONObject) getItem(position);
         try {
-            jsonObject = mData.getJSONObject(position);
             // set name
             bookName.setText(jsonObject.getString(NAME));
 

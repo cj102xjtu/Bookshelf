@@ -5,6 +5,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.fedorvlasov.lazylist.ImageLoader;
 
@@ -32,5 +34,20 @@ public class AllBooksListAdapter extends LoanBooksListAdapter {
         }
 
         return result;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        // TODO Auto-generated method stub
+        View vi = super.getView(position, convertView, parent);
+        
+        // change the background color if book is lent out.
+        if (isEnabled(position)) {
+            vi.setBackgroundResource(android.R.color.background_light);
+        } else {
+            vi.setBackgroundResource(android.R.color.darker_gray);
+        }
+
+        return vi;
     }
 }
