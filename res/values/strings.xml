@@ -12,5 +12,10 @@
     <string name="setting_key">SettingKey</string>
     <string name="default_user_name">JunC</string>
     <string name="setting_title">User name</string>
+    <string name="error_msg">Sorry, operation failed</string>
+    <string name="borrow_book_dialog_msg">Do you want to borrow this book?</string>
+    <string name="return_book_dialog_msg">Do you want to return this book?</string>
+    <string name="yes_btn_text">Yes</string>
+    <string name="no_btn_text">No</string>
 
 </resources>

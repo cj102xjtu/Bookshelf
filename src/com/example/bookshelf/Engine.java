@@ -22,32 +22,6 @@ public class Engine extends IntentService {
     static final String LOG_TAG = "Engine";
 
     HttpHandler mHttpHandler = null;
-    /** Holds last value set by a client. */
-    int mValue = 0;
-
-    /**
-     * Command to the service to register a client, receiving callbacks from the
-     * service. The Message's replyTo field must be a Messenger of the client
-     * where callbacks should be sent.
-     */
-    static final int MSG_REGISTER_CLIENT = 4;
-
-    /**
-     * Command to the service to unregister a client, ot stop receiving
-     * callbacks from the service. The Message's replyTo field must be a
-     * Messenger of the client as previously given with MSG_REGISTER_CLIENT.
-     */
-    static final int MSG_UNREGISTER_CLIENT = 2;
-
-    /**
-     * Command to service to set a new value. This can be sent to the service to
-     * supply a new value, and will be sent by the service to any registered
-     * clients with the new value.
-     */
-    static final int MSG_SET_VALUE = 3;
-    static final int MSG_GET_BOOKS_INFO = 1;
-    static final int MSG_LOAN_A_BOOK = 2;
-    static final int MSG_RETURN_A_BOOK = 3;
 
     @Override
     public void onCreate() {
@@ -92,8 +66,8 @@ public class Engine extends IntentService {
 
     public void getBooksInfo(Messenger messager) {
         // get user name from setting
-        SharedPreferences preferences = Preferences.getPrefs(this);
-        String userName = preferences.getString("SettingKey", "");
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String userName = preferences.getString(getString(R.string.setting_key), "");
         Log.d(LOG_TAG, "user name is: " + userName);
         // get info from server
         final JSONArray allBooks = HttpHandler.getAllBooks();
@@ -102,7 +76,7 @@ public class Engine extends IntentService {
         // update UI
         // send message back to UI
         try {
-            messager.send(Message.obtain(null, MSG_GET_BOOKS_INFO, new Msg2Ui() {
+            messager.send(Message.obtain(null, 0, new Msg2Ui() {
 
                 @Override
                 public void excute(MainActivity activity) {
@@ -130,6 +104,18 @@ public class Engine extends IntentService {
             getBooksInfo(messager);
         } else {
             // pop up error message in UI
+            try {
+                messager.send(Message.obtain(null, 0, new Msg2Ui() {
+
+                    @Override
+                    public void excute(MainActivity activity) {
+                        activity.showErrMsg();
+                    }
+                }));
+            } catch (RemoteException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
 
     }

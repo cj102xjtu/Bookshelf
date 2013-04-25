@@ -36,6 +36,8 @@ public class HttpHandler {
     private static String URL_LOAN_BOOK = "http://108.61.84.203/~bookshel/loanbook.php";
     private static String URL_RETURN_BOOK = "http://108.61.84.203/~bookshel/returnbook.php";
 
+    private static String JSON_TRUE = "true";
+
     private static String LOG_TAG = "HttpHandler";
 
     static public JSONArray getAllBooks() {
@@ -94,7 +96,7 @@ public class HttpHandler {
                                                                               // Limit
         HttpResponse response;
         JSONObject json = new JSONObject();
-        
+
         // set http action
         String action = "";
         if (loanBook) {
@@ -171,8 +173,13 @@ public class HttpHandler {
                     String line = "";
                     while ((line = reader.readLine()) != null) {
                         Log.v(LOG_TAG, line);
+                        
+                        // if loan or return book successful 
+                        if (line.equals(JSON_TRUE)) {
+                            result = true;
+                        }
                     }
-                    result = true;
+
                 }
             }
         } catch (IOException e) {
